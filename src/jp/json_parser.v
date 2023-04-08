@@ -43,7 +43,8 @@ fn (mut j JsonParser) is_include(key string) bool {
 }
 
 fn (j JsonParser) get_data() Data {
-	content := os.read_file(j.path) or {"{}"}
+	abs_path_file := os.expand_tilde_to_home(j.path)
+	content := os.read_file(abs_path_file) or {"{}"}
 	data := json.decode(Data, content) or { Data{} }
 	return data
 }
@@ -51,12 +52,14 @@ fn (j JsonParser) get_data() Data {
 fn (mut j JsonParser) set_data() int {
 	content := json.encode_pretty(j.data)
 	path_dir := rb.File{j.path}.dirname().to_v()
+	abs_path_dir := os.expand_tilde_to_home(path_dir)
+	abs_path_file := os.expand_tilde_to_home(j.path)
 
-	if !os.is_dir(path_dir) {
-		os.mkdir_all(path_dir) or {
+	if !os.is_dir(abs_path_dir) {
+		os.mkdir_all(abs_path_dir) or {
 			println("The '$path_dir' folder could not be created.")
 		}
 	}
-	os.write_file(j.path, content) or { return 1 }
+	os.write_file(abs_path_file, content) or { return 1 }
 	return 0
 }
