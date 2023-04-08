@@ -2,6 +2,7 @@ module jp
 
 import os
 import json
+import rb
 
 pub struct JsonParser {
 mut:
@@ -41,7 +42,7 @@ fn (mut j JsonParser) is_include(key string) bool {
 	return false
 }
 
-fn (mut j JsonParser) get_data() Data {
+fn (j JsonParser) get_data() Data {
 	content := os.read_file(j.path) or {"{}"}
 	data := json.decode(Data, content) or { Data{} }
 	return data
@@ -49,6 +50,13 @@ fn (mut j JsonParser) get_data() Data {
 
 fn (mut j JsonParser) set_data() int {
 	content := json.encode_pretty(j.data)
+	path_dir := rb.File{j.path}.dirname().to_v()
+
+	if !os.is_dir(path_dir) {
+		os.mkdir_all(path_dir) or {
+			println("The '$path_dir' folder could not be created.")
+		}
+	}
 	os.write_file(j.path, content) or { return 1 }
 	return 0
 }
