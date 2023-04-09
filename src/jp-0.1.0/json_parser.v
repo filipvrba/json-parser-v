@@ -1,10 +1,8 @@
 module jp
 
 import os
-import src.rb
-import x.json2
-
-type Data = map[string]json2.Any
+import json
+import rb
 
 pub struct JsonParser {
 mut:
@@ -12,14 +10,18 @@ mut:
 	data Data
 }
 
-pub fn (mut j JsonParser) get(key string) json2.Any {
+struct Data {
+mut:
+	items map[string]string
+}
+
+pub fn (mut j JsonParser) get(key string) string {
 	j.data = j.get_data()
-	return j.data[key] or {''}
+	return j.data.items[key]
 }
 
 pub fn (mut j JsonParser) set(key string, value string) int {
-	j.data = j.get_data()
-	j.data[key] = value
+	j.data.items[key] = value
 	return j.set_data()
 }
 
@@ -32,7 +34,7 @@ pub fn (mut j JsonParser) on(key string, value string) int {
 }
 
 fn (mut j JsonParser) is_include(key string) bool {
-	for j_key in j.data.keys() {
+	for j_key in j.data.items.keys() {
 		if j_key == key {
 			return true
 		} 
@@ -43,12 +45,12 @@ fn (mut j JsonParser) is_include(key string) bool {
 fn (j JsonParser) get_data() Data {
 	abs_path_file := os.expand_tilde_to_home(j.path)
 	content := os.read_file(abs_path_file) or {"{}"}
-	data := json2.raw_decode(content) or { panic(err) }
-	return data.as_map()
+	data := json.decode(Data, content) or { Data{} }
+	return data
 }
 
 fn (mut j JsonParser) set_data() int {
-	content := json2.encode_pretty[map[string]json2.Any](j.data)
+	content := json.encode_pretty(j.data)
 	path_dir := rb.File{j.path}.dirname().to_v()
 	abs_path_dir := os.expand_tilde_to_home(path_dir)
 	abs_path_file := os.expand_tilde_to_home(j.path)
