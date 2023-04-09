@@ -1,7 +1,7 @@
 module jp
 
+import rb
 import os
-import src.rb
 import x.json2
 
 type Data = map[string]json2.Any
