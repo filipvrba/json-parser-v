@@ -17,13 +17,13 @@ pub fn (mut j JsonParser) get(key string) json2.Any {
 	return j.data[key] or {''}
 }
 
-pub fn (mut j JsonParser) set(key string, value string) int {
+pub fn (mut j JsonParser) set(key string, value json2.Any) int {
 	j.data = j.get_data()
 	j.data[key] = value
 	return j.set_data()
 }
 
-pub fn (mut j JsonParser) on(key string, value string) int {
+pub fn (mut j JsonParser) on(key string, value json2.Any) int {
 	j.data = j.get_data()
 	if !j.is_include(key) {
 		return j.set(key, value)
@@ -40,7 +40,7 @@ fn (mut j JsonParser) is_include(key string) bool {
 	return false
 }
 
-fn (j JsonParser) get_data() Data {
+pub fn (j JsonParser) get_data() Data {
 	abs_path_file := os.expand_tilde_to_home(j.path)
 	content := os.read_file(abs_path_file) or {"{}"}
 	data := json2.raw_decode(content) or { panic(err) }
